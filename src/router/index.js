@@ -1,22 +1,68 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
+
+const getRouterView = () => ({
+  render: h => h('router-view')
+})
+
+const getComponent = (path, component) => import(`../views/${path}/${component}.vue`)
+
+const getAuthComponent = component => getComponent('Auth', component)
+const getAppComponent = component => getComponent('App', component)
 
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: Home
+    component: () => getAppComponent('App'),
+    children: [
+      {
+        path: '',
+        name: 'home',
+        component: () => getAppComponent('Dashboard/Dashboard')
+      },
+      {
+        path: '/professor',
+        name: 'professor',
+        component: () => getAppComponent('Professor/Professor')
+      },
+      {
+        path: '/student',
+        name: 'student',
+        component: () => getAppComponent('Student/Student')
+      },
+      {
+        path: '/subject',
+        name: 'subject',
+        component: () => getAppComponent('Subject/Subject')
+      },
+      {
+        path: '/module',
+        name: 'module',
+        component: () => getAppComponent('Module/Module')
+      },
+    ],
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/auth',
+    name: 'auth',
+    component: getRouterView(),
+    children: [
+      {
+        path: 'login',
+        name: 'login',
+        component: () => getAuthComponent('Login/Login'),
+      },
+      {
+        path: 'register',
+        name: 'register',
+        component: () => getAuthComponent('Register/Register'),
+      }
+    ],
   }
 ]
 

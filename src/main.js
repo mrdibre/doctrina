@@ -1,13 +1,18 @@
 import Vue from 'vue'
-import App from './App.vue'
+import App from './Main.vue'
+
 import router from './router'
-import store from './store'
 import './registerServiceWorker'
+import firebase from './lib/firebase'
+import vuetify from './plugins/vuetify'
 
 Vue.config.productionTip = false
 
+Vue.prototype.$database = firebase.database()
+Vue.prototype.$auth = firebase.auth()
+
 new Vue({
   router,
-  store,
+  vuetify,
   render: h => h(App)
 }).$mount('#app')
