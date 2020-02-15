@@ -42,6 +42,16 @@ const routes = [
         name: 'module',
         component: () => getAppComponent('Module/Module')
       },
+      {
+        path: '/questions',
+        name: 'questions',
+        component: () => getAppComponent('Question/Question')
+      },
+      {
+        path: '/lessons',
+        name: 'lessons',
+        component: () => getAppComponent('Lesson/Lesson')
+      },
     ],
     meta: {
       requiresAuth: true,
@@ -63,7 +73,11 @@ const routes = [
         component: () => getAuthComponent('Register/Register'),
       }
     ],
-  }
+  },
+  {
+    path: '*',
+    redirect: '/',
+  },
 ]
 
 const router = new VueRouter({

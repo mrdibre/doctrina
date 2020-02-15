@@ -1,167 +1,85 @@
-<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-  <v-data-table :headers="headers" :items="professors" class="elevation-1" style="width: 80%;">
-    <template v-slot:top>
-      <v-toolbar flat color="white">
-        <v-toolbar-title>Professores</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-dialog v-model="dialog" max-width="60vh">
-          <template v-slot:activator="{ on }">
-            <v-btn color="primary" dark class="mb-2" v-on="on" outlined>Novo professor</v-btn>
-          </template>
-          <v-card>
-            <v-card-title>
-              <span class="headline">{{ formTitle }}</span>
-            </v-card-title>
-
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field v-model="editedItem.name" label="Nome"/>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field v-model="editedItem.email" label="Email"/>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field v-model="editedItem.password" label="Senha"/>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-select :items="['UFU', 'IFTM', 'USP', 'UFG', 'UFTM']" v-model="editedItem.institute" label="Instituição"/>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="primary" text @click="close">Cancelar</v-btn>
-              <v-btn color="primary" outlined @click="save">Salvar</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-      </v-toolbar>
-    </template>
-    <template v-slot:item.action="{ item }">
-      <v-icon class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-      <v-icon @click="deleteItem(item)">mdi-delete</v-icon>
-    </template>
-    <template v-slot:no-data>
-      <p class="title mt-2 mb-2">Nenhum professor disponível</p>
-    </template>
-    <template v-slot:no-content>
-      <p class="title mt-2 mb-2">Nenhum professor disponível</p>
-    </template>
-  </v-data-table>
+<template>
+  <Crud ref-d-b="/professors" title="Professores" :headers="headers" v-model="value" :is-valid="isValid">
+    <v-form v-model="isValid" style="width: 100%;">
+      <v-col cols="12">
+        <v-text-field
+                label="Nome"
+                v-model="value.nome"
+                :rules="[rules.required, rules.greaterThan(3)]"
+        />
+      </v-col>
+      <v-col cols="12">
+        <v-text-field
+                label="Email"
+                type="email"
+                v-model="value.email"
+                :rules="[rules.required, rules.email]"
+        />
+      </v-col>
+      <v-col cols="12">
+        <v-text-field
+                label="Senha"
+                type="password"
+                v-model="value.senha"
+                :rules="[rules.required, rules.greaterThan(8)]"
+        />
+      </v-col>
+      <v-col cols="12">
+        <v-text-field
+                label="Instituição"
+                v-model="value.instituicao"
+                :rules="[rules.required, rules.greaterThan(3)]"
+        />
+      </v-col>
+    </v-form>
+  </Crud>
 </template>
 
 <script>
 
-  const REF = '/professors'
+  import { required, greaterThan, email } from "../../../utils/rules"
+  import Crud from "../../../components/Crud/Crud"
 
   export default {
     name: "Professor",
     data: () => ({
-      dialog: false,
+      isValid: false,
+      lessons: [],
       headers: [
-        {text: 'Nome', value: 'name'},
+        {text: 'Nome', value: 'nome'},
         {text: 'Email', value: 'email'},
-        {text: 'Instituição', value: 'institute'},
-        {text: 'Ações', value: 'action', sortable: false}
+        {text: 'Senha', value: 'senha'},
+        {text: 'Instituição', value: 'instituicao'},
+        {text: 'Ações', value: 'action'}
       ],
-      professors: [],
-      editedIndex: -1,
-      editedItem: {
+      value: {
         id: null,
-        name: '',
+        nome: '',
         email: '',
-        password: '',
-        institute: '',
+        senha: '',
+        instituicao: '',
+        disciplinas: [],
       },
-      defaultItem: {
-        id: null,
-        name: '',
-        email: '',
-        password: '',
-        institute: '',
-      }
+      rules: {
+        email,
+        required,
+        greaterThan,
+      },
     }),
-    computed: {
-      formTitle() {
-        return this.editedIndex === -1 ? 'Novo Professor' : 'Editar Professor'
-      }
-    },
     watch: {
-      dialog(val) {
-        val || this.close()
+      value(current){
+        if(!Array.isArray(current.disciplinas)) {
+          this.value.disciplinas = Object.values(current.disciplinas)
+        }
       }
     },
-    methods: {
-      initialize() {
-        this.professors = []
-      },
-
-      editItem(item) {
-        this.editedIndex = this.professors.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem({name, id}) {
-        const shouldRemove = confirm(`Deseja mesmo remover ${name}?`)
-
-        if(shouldRemove) {
-          this
-            .$database
-            .ref(`${REF}/${id}`)
-            .remove(removed => console.log(removed))
-        }
-      },
-
-      close() {
-        this.dialog = false
-        setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        }, 300)
-      },
-
-      save() {
-        if (this.editedIndex > -1) {
-          if(!this.editedItem.id) {
-            Object.assign(this.professors[this.editedIndex], this.editedItem)
-          } else{
-            this
-              .$database
-              .ref(`${REF}/${this.editedItem.id}`)
-              .update(this.editedItem)
-          }
-        } else {
-          this
-            .$database
-            .ref(REF)
-            .push(this.editedItem)
-            .then(() => Object.assign(this.editedItem, this.defaultItem))
-        }
-        this.close()
-      }
+    components: {
+      Crud,
     },
     created() {
-      this.initialize()
-
-      this
-        .$database
-        .ref(REF)
-        .on('value', snapshot => {
-          try{
-            this.professors = Object.keys(snapshot.toJSON()).map((id) => ({...snapshot.toJSON()[id], id}))
-          }catch (e) {
-            this.professors = []
-          }
-        })
-
-    },
-    beforeDestroy() {
-      this.$database.ref(REF).off('value')
+      this.$database.ref('/professors').once('value').then(snapshot => {
+        this.lessons = Object.values(snapshot.val()).map(({nome}) => nome)
+      })
     }
   }
 </script>

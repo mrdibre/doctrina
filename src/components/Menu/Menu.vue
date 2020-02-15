@@ -38,6 +38,8 @@
         { title: 'Alunos', icon: 'mdi-account', to: '/student' },
         { title: 'Disciplinas', icon: 'mdi-pencil-ruler', to: '/subject' },
         { title: 'Modulos', icon: 'mdi-semantic-web', to: '/module' },
+        { title: 'Atividades', icon: 'mdi-book', to: '/lessons' },
+        { title: 'Perguntas', icon: 'mdi-help-circle', to: '/questions' },
       ],
     }),
     methods: {

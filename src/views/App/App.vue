@@ -21,7 +21,7 @@
     name: "App",
     components: {
       Menu
-    }
+    },
   }
 
 </script>

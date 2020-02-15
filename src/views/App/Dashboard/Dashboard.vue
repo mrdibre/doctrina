@@ -1,5 +1,5 @@
 <template>
-  <h1>Bem-vindo, {{$auth.currentUser.displayName}}</h1>
+  <h1>Bem-vindo, {{$user.val().name}}</h1>
 </template>
 
 <script>
